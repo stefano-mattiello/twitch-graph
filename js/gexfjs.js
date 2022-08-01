@@ -681,7 +681,7 @@
                         var _n = $(this),
                             _pos = _n.find("viz\\:position,position"),
                             _x = _pos.attr("x"),
-                            _y = _pos.attr("y");
+                            _y = _pos.attr("y")+483;
                         _xmin = Math.min(_x, _xmin);
                         _xmax = Math.max(_x, _xmax);
                         _ymin = Math.min(_y, _ymin);
@@ -702,7 +702,7 @@
                                 id: _id,
                                 l: _label,
                                 x: _deltax + _scale * _pos.attr("x"),
-                                y: _deltay - _scale * _pos.attr("y"),
+                                y: _deltay - _scale * (_pos.attr("y")+483),
                                 r: _scale * _n.find("viz\\:size,size").attr("value"),
                             },
                             _col = _n.find("viz\\:color,color"),
