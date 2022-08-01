@@ -5,14 +5,14 @@ import CSVWriting
 
 #This function removes:
 #	the users that have been detected too many times (since they are probably bots) 
-#	the users that have watched a stremer less than 2 hours 
-def filter_dict(old_dict,max_count=400,min_count=8):
+#	the users that have watched a streamer less than 2 hours 
+def filter_dict(old_dict,max_count=900,min_count=8):
 	newdict=dict()
 	userlist=[user for user in old_dict.keys() if old_dict[user]['streaming']!=0 or sum(old_dict[user].values())<max_count]
 	for user in userlist:
 	    for streamer in old_dict[user].keys():
 	    	if streamer!='streaming':
-		    	if (old_dict[user][streamer]>=min_count or old_dict[user][streamer]>=0.75*old_dict[streamer]['streaming']):
+		    	if (old_dict[user][streamer]>=min_count or old_dict[user][streamer]>=0.70*old_dict[streamer]['streaming']):
 		    		user_dict=newdict.setdefault(user,{'streaming':0})
 		    		user_dict[streamer]=old_dict[user][streamer]
 	return newdict
@@ -49,7 +49,7 @@ def CreateOverlapDict(dict):
             if(comparisonKey != key and comparisonKey not in completedStreamers): #If its not a self comparison and the comparison hasn't already been completed
                 overlapSize = len(dict[key] & dict[comparisonKey]) #Find the overlap size of the two streamers using set intersection
                 if(overlapSize > 100 ):
-                    tempList[comparisonKey] = overlapSize #If the size is over 300 add {comparisonStreamer: overlap} to the dictionary
+                    tempList[comparisonKey] = overlapSize #If the size is over 100 add {comparisonStreamer: overlap} to the dictionary
         viewerOverlapDict[key] = tempList #Add this comparison dictionary to the larger dictionary for that streamer
         completedStreamers.append(key) #Add the streamer to completed as no comparisons using this streamer need to be done anymore
         count+=1
@@ -94,7 +94,7 @@ class main():
 	#Read the data from the csv
 	d=CSVWriting.readcsv()
 	#Remove users with too many or too little detections
-	filtered_dict=filter_dict(d,750,8)
+	filtered_dict=filter_dict(d,900,8)
 	#Get dictionary  {streamer: [...users]} of the communities
 	rawDict = getrawdict(filtered_dict) 
 	#Process data creating dictionary of {streamer1: {streamer2: overlap, streamer3: overlap}}
