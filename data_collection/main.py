@@ -1,39 +1,36 @@
 import GetTwitchData
 import CSVWriting
-import os
-import sys
-import datetime
+import time
 import csv
-
-#This function get the data from Twitch andd then update the csv file data.csv
+import json
+import os
+os.chdir('/home/stefano/repos/twitch-graph/data_collection')
+#This function get the data from Twitch and then update the csv file data.csv
 def update_csv():
 	
-	
-	now = datetime.datetime.now()
-	row=["%4.f %2.f %2.f %2.f %2.f"%(now.year, now.month, now.day, now.hour, now.minute)]
+
+	now=int(time.time())
 	
 	#Read the data
-	old_data=CSVWriting.readcsv()
-	
-	
+	with open('data.json', 'r') as f:
+		old_data = json.load(f)
 	#Get the top 100 streams on Twitch
-	json = GetTwitchData.GetTopStreams(3) 
+	j = GetTwitchData.GetTopStreams(100)
 	#Create a dictionary of {streamer:[viewers]} from those 100 streams
-	current_data = GetTwitchData.GetDictOfStreamersAndViewers(json) 
-	
+	current_data = GetTwitchData.GetDictOfStreamersAndViewers(j) 
 	#Update the dictionary d with the obtained data 
-	new_data,n_users=CSVWriting.updatedict(old_data,current_data)
+	new_data,n_users=CSVWriting.updatedict(old_data,current_data,now)
 
 	#Save the updated data
-	CSVWriting.writecsv(new_data)
-	
+	with open('data.json', 'w') as json_file:
+		json.dump(new_data, json_file)
 	
 	#Save the number of users at this time
-	row.append(n_users)
+	row=[now,n_users]
 	
 	with open("users.csv", 'a+', newline='') as write_obj:
-         	csv_writer = csv.writer(write_obj)
-         	csv_writer.writerow(row)
+		csv_writer = csv.writer(write_obj)
+		csv_writer.writerow(row)
 
 
 class main():

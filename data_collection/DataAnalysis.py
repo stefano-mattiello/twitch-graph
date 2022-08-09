@@ -1,21 +1,29 @@
 import sys
 import csv
-import pandas as pd
 import CSVWriting
+import json
+
+#This function take a dictionary {user_1: {streamer_1:[time_1,..,time_l],streamer_2:[time_1,..,time_c]},...}
+#and returns {user_1: {streamer_1:l,streamer_2:c},...}
+#
+def flatten_dict(d):
+    for user in d.keys():
+        for streamer in d[user].keys():
+            d[user][streamer]=len(d[user][streamer])
 
 #This function removes:
 #	the users that have been detected too many times (since they are probably bots) 
 #	the users that have watched a streamer less than 2 hours 
 def filter_dict(old_dict,max_count=900,min_count=8):
-	newdict=dict()
-	userlist=[user for user in old_dict.keys() if old_dict[user]['streaming']!=0 or sum(old_dict[user].values())<max_count]
-	for user in userlist:
-	    for streamer in old_dict[user].keys():
-	    	if streamer!='streaming':
-		    	if (old_dict[user][streamer]>=min_count or old_dict[user][streamer]>=0.70*old_dict[streamer]['streaming']):
-		    		user_dict=newdict.setdefault(user,{'streaming':0})
-		    		user_dict[streamer]=old_dict[user][streamer]
-	return newdict
+    newdict=dict()
+    userlist=[user for user in old_dict.keys() if old_dict[user]['streaming']!=0 or sum(old_dict[user].values())<max_count]
+    for user in userlist:
+        for streamer in old_dict[user].keys():
+            if streamer!='streaming':
+                if (old_dict[user][streamer]>=min_count or old_dict[user][streamer]>=0.70*old_dict[streamer]['streaming']):
+                    user_dict=newdict.setdefault(user,{'streaming':0})
+                    user_dict[streamer]=old_dict[user][streamer]
+    return newdict
 
 
 #This function returns a dictionary {streamer: [...users]}
@@ -92,13 +100,16 @@ def GenerateGephiLabels(rawDict):
 
 class main():
 	#Read the data from the csv
-	d=CSVWriting.readcsv()
+    with open('data.json', 'r') as f:
+        d = json.load(f)
+    #Keep only the number of detection
+    flatten_dict(d)
 	#Remove users with too many or too little detections
-	filtered_dict=filter_dict(d,900,8)
+    filtered_dict=filter_dict(d,900,8)
 	#Get dictionary  {streamer: [...users]} of the communities
-	rawDict = getrawdict(filtered_dict) 
+    rawDict = getrawdict(filtered_dict) 
 	#Process data creating dictionary of {streamer1: {streamer2: overlap, streamer3: overlap}}
-	dict1= CreateOverlapDict(rawDict) 
+    dict1= CreateOverlapDict(rawDict) 
 	#Generate data for Gephi
-	GenerateGephiData(dict1)
-	GenerateGephiLabels(rawDict)
+    GenerateGephiData(dict1)
+    GenerateGephiLabels(rawDict)

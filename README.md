@@ -8,7 +8,7 @@ The project's aim is to map communities of streamers on Twitch.tv based on share
 
 ## Data
 
-The data_collection folder has a script called main that can be ran to collect the top 100 streams in italian language and all their viewers and save it to a csv. To collect the data I ran the script every 15 minutes from 17/07/2022 to 1/08/2022, for a total of 1436 times. 
+The data_collection folder has a script called main that can be ran to collect the top 100 streams in italian language and all their viewers and save the data in a json file. To collect the data I ran the script every 15 minutes from 17/07/2022 to 1/08/2022, for a total of 1436 times. 
 
 ## Graph
 
