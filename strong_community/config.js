@@ -1,7 +1,7 @@
 /*** USE THIS FILE TO SET OPTIONS ***/
 
 GexfJS.setParams({
-    graphFile : "twitch-graph_17_july_15_august.gexf",
+    graphFile : "twitch-graph_17_july_15_august_strong.gexf",
         /*
             The GEXF file to show ! -- can be overriden by adding
             a hash to the document location, e.g. index.html#celegans.gexf
@@ -20,19 +20,19 @@ GexfJS.setParams({
         /*
             Default zoom level. At zoom = 0, the graph should fill a 800x700px zone
          */
-    curvedEdges : true,
+    curvedEdges : false,
         /*
             False for curved edges, true for straight edges
             this setting can't be changed from the User Interface
         */
-    edgeWidthFactor : 0.1,
+    edgeWidthFactor : 1,
         /*
             Change this parameter for wider or narrower edges
             this setting can't be changed from the User Interface
         */
-    minEdgeWidth : 0.1,
-    maxEdgeWidth : 7,
-    textDisplayThreshold: 7,
+    minEdgeWidth : 1,
+    maxEdgeWidth : 5,
+    textDisplayThreshold: 6,
     fontSizeFactor : 1,
     nodeSizeFactor : 1,
         /*

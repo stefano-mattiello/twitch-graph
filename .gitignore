@@ -2,3 +2,6 @@ data_collection/.env
 data_collection/streamers.csv
 data_collection/users.csv
 data_collection/data.json
+data_collection/__pycache__
+twitch_graph.gephi
+twitch_graph_july.gephi

@@ -1,19 +1,18 @@
 import csv
 
 def updatedict(dict0,dict1,now):
-
-	n_users=0
-	set_users=set()
-	for streamer in dict1.keys():
-		streamer_dict=dict0.setdefault(streamer,{'streaming':[]})
-		streamer_dict['streaming'].append(now)
-		for user in dict1[streamer]:
-			if user not in set_users:
-				n_users+=1
-				set_users.add(user)
-			user_dict=dict0.setdefault(user,{'streaming':[]})
-			user_dict[streamer]=user_dict.setdefault(streamer,[])+[now]
-	return dict0,n_users
+    n_users=0
+    set_users=set()
+    for streamer in dict1.keys():
+        streamer_dict=dict0.setdefault(streamer,{'streaming':dict()})
+        streamer_dict['streaming'][now]=dict1[streamer]['stream_info']
+        for user in dict1[streamer]['viewers']:
+            if user not in set_users:
+                n_users+=1
+                set_users.add(user)
+            user_dict=dict0.setdefault(user,{'streaming':dict()})
+            user_dict[streamer]=user_dict.setdefault(streamer,[])+[now]
+    return dict0,n_users
 
 def readcsv():
     reader = csv.reader(open("data.csv"))
@@ -34,11 +33,4 @@ def writecsv(users_dict):
         for streamer,count in user_dict.items():
             row+=[streamer,count]
         writer.writerow([user]+row)
-
-def get_set_of_streamers():
-    s=set()
-    reader = csv.reader(open('streamers.csv'))
-    for row in reader:
-        s.add(row[0])
-    return s
 

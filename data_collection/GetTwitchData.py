@@ -24,26 +24,16 @@ def make_request(url,headers=None,time_limit=90,time_sleep=2):
 			time.sleep(time_sleep)
 	return r if not failed else None
 
-#This function return a boolean that represent if a channel is live or not
-def is_live(streamer):
-	r=make_request('https://api.twitch.tv/helix/streams?user_login=' + streamer, headers=Headers,time_limit= 2, time_sleep= 0.5)
+#Gets the numberOfStreams top streams currently live on twitch. numberOfStreams max is 100
+
+def GetTopStreams(numberOfStreams,cursor=None):
+	#Header auth values taken from twitchtokengenerator.com, not sure what to do if they break
+	#Request top 100 viewed streams on twitch
+	r=make_request('https://api.twitch.tv/helix/streams?first=' + str(numberOfStreams)+'&language=it', headers=Headers) if cursor==None else make_request('https://api.twitch.tv/helix/streams?first=' + str(numberOfStreams)+'&language=it'+'&after='+cursor, headers=Headers)
 	if r!=None:
 		raw = r.text.encode('utf-8')
 		j = json.loads(raw)
-		return j['data']!=[]
-	return False
-
-#Gets the numberOfStreams top streams currently live on twitch. numberOfStreams max is 100
-
-def GetTopStreams(numberOfStreams):
-	#Header auth values taken from twitchtokengenerator.com, not sure what to do if they break
-	#Request top 100 viewed streams on twitch
-	r=make_request('https://api.twitch.tv/helix/streams?first=' + str(numberOfStreams)+'&language=it', headers=Headers)
-	if r==None:
-		raise(BaseException('Timeout getting top 100 streams'))
-	raw = r.text.encode('utf-8')
-	j = json.loads(raw)
-	return j
+		return j
 
 #Get the a list of viewers for a given twitch channel from tmi.twitch (Not an API call)
 def getCurrentViewersForChannel(channel):
@@ -56,25 +46,34 @@ def getCurrentViewersForChannel(channel):
 		return None #If the query couldnt be completed return None (This occurs with foreign characters)
 
 #This method looks up the viewers of each streamer in j and in the streamers archive (if it takes less than 120 second of execution) and creates a large dictionary of {streamer: [viewers]}
-def GetDictOfStreamersAndViewers(j,max_time=120,min_rate=150):
+def GetDictOfStreamersAndViewers(j,max_time=120):
 	start=time.time()
-	streamers_archive=CSVWriting.get_set_of_streamers()
 	dict = {}
-	writer= csv.writer(open("streamers.csv",'a+', newline=''))
-	streamers = set([element['user_name'].lower() for element in j['data']]) #Get just the list of streamers
-	for streamer in streamers:
-		if streamer not in streamers_archive:
-			writer.writerow([streamer])
-		viewers = getCurrentViewersForChannel(streamer) #Get viewers for a particular streamer
+	for stream in j['data']:
+		streamer_name=stream['user_name'].lower()
+		viewers = getCurrentViewersForChannel(streamer_name) #Get viewers for a particular streamer
 		if (viewers != None):
-			dict[streamer] = viewers #Add streamer to dictionary with list of viewers as value		
+			dict[streamer_name] = {'viewers':viewers,'stream_info':{'game_name':stream['game_name'],'viewer_count':stream['viewer_count'],'is_mature':stream['is_mature']}} #Add streamer to dictionary with list of viewers as value		
+	last=True
 	#The following part of the function run only if the running time is less than max_time
-	#Get viewers for other live channels saved in streamers.csv
-	streamers_archive=streamers_archive-streamers
-	while time.time()-start<max_time and streamers_archive!=set():
-		streamer=streamers_archive.pop()
-		if is_live(streamer):
-			viewers = getCurrentViewersForChannel(streamer)
-			if (viewers != None):
-				dict[streamer] = viewers
+	#It continues to request streams until it tuns out of time or there are no more streams to get (or the API request fails)
+	while time.time()-start<max_time:
+		if last:
+			last=False
+			i=0
+			cursor=j['pagination']['cursor']
+			j=GetTopStreams(100,cursor=cursor)
+			if j==None:
+				return dict
+			length=len(j['data'])
+			if length==0:
+				return dict
+		stream=j['data'][i]
+		streamer_name=stream['user_name'].lower()
+		viewers = getCurrentViewersForChannel(streamer_name)
+		if (viewers != None):
+			dict[streamer_name] = {'viewers':viewers,'stream_info':{'game_name':stream['game_name'],'viewer_count':stream['viewer_count'],'is_mature':stream['is_mature'],'tag_ids':stream['tag_ids']}}
+		i+=1
+		if i==length:
+			last=True
 	return dict
