@@ -29,7 +29,8 @@
             centreY: 350,
             activeNode: -1,
             currentNode: -1,
-            isMoving: false
+            isMoving: false,
+            strong_comm:false
         },
         oldParams: {},
         minZoom: -3,
@@ -284,9 +285,9 @@
                 "left": "0px"
             }, function () {
                 $("#aUnfold").attr("class", "leftarrow");
-                $("#zonecentre").css({
+                /*$("#zonecentre").css({
                     left: _cG.width() + "px"
-                });
+                });*/
             });
             $('<h3>')
                 .append($('<div>').addClass('largepill').css('background', _d.B))
@@ -668,7 +669,8 @@
                 } else {
                     var _g = $(data).find("graph"),
                         _nodes = _g.children().filter("nodes").children(),
-                        _edges = _g.children().filter("edges").children();
+                        _edges = _g.children().filter("edges").children(),
+                        _description=_g.attr("description");
                     GexfJS.graph = {
                         directed: (_g.attr("defaultedgetype") == "directed"),
                         nodeList: [],
@@ -676,6 +678,36 @@
                         edgeList: [],
                         attributes: {},
                     };
+                    if (_description=="strong"){
+                        GexfJS.params.strong_comm=true
+                        GexfJS.params.curvedEdges = false;
+                        GexfJS.params.edgeWidthFactor=1;
+                        GexfJS.params.minEdgeWidth=1;
+                        GexfJS.params.maxEdgeWidth=5;
+                        GexfJS.params.textDisplayThreshold=6;
+                        $("#period").replaceWith($('<h4 id="period">').text("Data collected from 17/07 to 15/08 2022"));
+                        $("#description").replaceWith($('<h4 id="description">').text("Nodes are connected if they share more than 40 viewers and the shared viewers are (at least) the 40% of the total viewers of one of the two nodes."));
+                    }
+                    else if (_description=="july") {
+                        GexfJS.params.strong_comm = false;
+                        GexfJS.params.curvedEdges = true;
+                        GexfJS.params.edgeWidthFactor=0.1;
+                        GexfJS.params.minEdgeWidth=0.1;
+                        GexfJS.params.maxEdgeWidth=7;
+                        GexfJS.params.textDisplayThreshold=7;
+                        $("#period").replaceWith($('<h4 id="period">').text("Data collected from 17/07 to 1/08 2022"));
+                        $("#description").replaceWith($('<h4 id="description">').text("Nodes are connected if they share more than 40 viewers and the shared viewers are (at least) the 10% of the total viewers of one of the two nodes."));
+                    }
+                    else {
+                        GexfJS.params.strong_comm = false;
+                        GexfJS.params.curvedEdges = true;
+                        GexfJS.params.edgeWidthFactor=0.1;
+                        GexfJS.params.minEdgeWidth=0.1;
+                        GexfJS.params.maxEdgeWidth=7;
+                        GexfJS.params.textDisplayThreshold=7;
+                        $("#period").replaceWith($('<h4 id="period">').text("Data collected from 17/07 to 15/08 2022"));
+                        $("#description").replaceWith($('<h4 id="description">').text("Nodes are connected if they share more than 40 viewers and the shared viewers are (at least) the 10% of the total viewers of one of the two nodes."));
+                    }
                     var _xmin = 1e9, _xmax = -1e9, _ymin = 1e9, _ymax = -1e9; _marge = 30;
                     $(_nodes).each(function () {
                         var _n = $(this),
@@ -770,8 +802,10 @@
                             t: _tix,
                             W: Math.max(GexfJS.params.minEdgeWidth, Math.min(GexfJS.params.maxEdgeWidth, (_w || 1))) * _scale,
                             w: parseFloat(_w || "1"),
-                            C: "rgba(" + _r + "," + _g + "," + _b + ",.7)",
-                            Ct: "rgba(" + _r + "," + _g + "," + _b + ",.15)",
+                            C_: "rgba(" + _r + "," + _g + "," + _b + ",.7)",
+                            C: "rgba(" + _r + "," + _g + "," + _b + ",1)",
+                            Ct: "rgba(" + _r + "," + _g + "," + _b + ",.6)",
+                            Ctt: "rgba(" + _r + "," + _g + "," + _b + ",.15)",
                             l: _e.attr("label") || "",
                             d: _directed
                         });
@@ -989,7 +1023,17 @@
                     var _coords = ((GexfJS.params.useLens && GexfJS.mousePosition) ? calcCoord(GexfJS.mousePosition.x, GexfJS.mousePosition.y, _ds.actual_coords) : _ds.actual_coords);
                     _coordt = ((GexfJS.params.useLens && GexfJS.mousePosition) ? calcCoord(GexfJS.mousePosition.x, GexfJS.mousePosition.y, _dt.actual_coords) : _dt.actual_coords);
                     //GexfJS.ctxGraphe.strokeStyle = (_isLinked ? _d.C : "rgba(100,100,100,0.2)");
-                    GexfJS.ctxGraphe.strokeStyle = (_isLinked ? _d.C : _d.Ct);
+                    if (GexfJS.params.strong_comm){
+                        if (_centralNode != -1) {
+                            GexfJS.ctxGraphe.strokeStyle = (_isLinked ? _d.C : _d.Ctt);
+                        } else{ 
+                            GexfJS.ctxGraphe.strokeStyle = (_d.C_);
+                        }
+                    }
+                    else{
+                        GexfJS.ctxGraphe.strokeStyle = (_isLinked ? _d.C_: _d.Ctt);
+                    }
+                    
                     traceArc(GexfJS.ctxGraphe, _coords, _coordt, _sizeFactor * 3.5, GexfJS.params.showEdgeArrow && _d.d);
                 }
             }
@@ -1009,6 +1053,43 @@
             var _d = GexfJS.graph.nodeList[i];
             if (_d.visible && _d.withinFrame) {
                 if (i != _centralNode) {
+                    if (GexfJS.params.strong_comm){
+                        _d.real_coords = ((GexfJS.params.useLens && GexfJS.mousePosition) ? calcCoord(GexfJS.mousePosition.x, GexfJS.mousePosition.y, _d.actual_coords) : _d.actual_coords);
+                    _d.isTag = (_tagsMisEnValeur.indexOf(parseInt(i)) != -1);
+                    GexfJS.ctxGraphe.beginPath();
+                    GexfJS.ctxGraphe.fillStyle = ((_tagsMisEnValeur.length && !_d.isTag) ? _d.G : _d.B);
+                    GexfJS.ctxGraphe.arc(_d.real_coords.x, _d.real_coords.y, _d.real_coords.r, 0, Math.PI * 2, true);
+                    GexfJS.ctxGraphe.closePath();
+                    GexfJS.ctxGraphe.fill();
+                    if (_centralNode!=-1){
+                        if ((_tagsMisEnValeur.length) && (!_d.isTag)){
+                            var _fs = Math.max(GexfJS.params.textDisplayThreshold +2, _d.real_coords.r * _textSizeFactor);
+                            if (_fs > (GexfJS.params.textDisplayThreshold+4)){
+                            GexfJS.ctxGraphe.strokeStyle = ((i != GexfJS.params.activeNode) && _tagsMisEnValeur.length && ((!_d.isTag) || (_centralNode != -1)) ? "rgba(0,0,0,0.2)" : "rgb(0,0,0)");
+                    	
+                            GexfJS.ctxGraphe.font = "bold " + Math.floor(_fs) + "px Segoe UI";
+		                    GexfJS.ctxGraphe.textAlign = "center";
+		                    GexfJS.ctxGraphe.textBaseline = "middle";
+		                    GexfJS.ctxGraphe.lineWidth = Math.floor(_fs * 0.15);
+		                    GexfJS.ctxGraphe.strokeText(_d.l, _d.real_coords.x, _d.real_coords.y);
+                            GexfJS.ctxGraphe.fillText(_d.l, _d.real_coords.x, _d.real_coords.y);}
+                        }
+                        else{
+                            var _fs = Math.max(GexfJS.params.textDisplayThreshold , _d.real_coords.r * _textSizeFactor);
+                            GexfJS.ctxGraphe.font = "800 " + Math.floor(_fs) + "px Segoe UI";
+                            GexfJS.ctxGraphe.textAlign = "center";
+                            GexfJS.ctxGraphe.textBaseline = "middle";
+                            GexfJS.ctxGraphe.strokeStyle = "rgb(0,0,0)";
+                            GexfJS.ctxGraphe.lineWidth = Math.floor(_fs * 0.15);
+                            GexfJS.ctxGraphe.strokeText(_d.l, _d.real_coords.x, _d.real_coords.y);
+                            GexfJS.ctxGraphe.fillStyle = "rgb(255,255,255)";
+                            GexfJS.ctxGraphe.fillText(_d.l, _d.real_coords.x, _d.real_coords.y);
+                        }
+                        
+                    }
+                    }
+
+                    else{
                     _d.real_coords = ((GexfJS.params.useLens && GexfJS.mousePosition) ? calcCoord(GexfJS.mousePosition.x, GexfJS.mousePosition.y, _d.actual_coords) : _d.actual_coords);
                     _d.isTag = (_tagsMisEnValeur.indexOf(parseInt(i)) != -1);
                     GexfJS.ctxGraphe.beginPath();
@@ -1016,6 +1097,7 @@
                     GexfJS.ctxGraphe.arc(_d.real_coords.x, _d.real_coords.y, _d.real_coords.r, 0, Math.PI * 2, true);
                     GexfJS.ctxGraphe.closePath();
                     GexfJS.ctxGraphe.fill();
+                }
                 }
             }
         }
@@ -1145,7 +1227,7 @@
     
     function updateInfoPanel() {
         $("#infoPanel").attr("class", GexfJS.params.showInfo ? "" : "off");
-        $("#listPanel").attr("class", (GexfJS.params.showList) ? "" : "off");
+        //$("#listPanel").attr("class", (GexfJS.params.showList) ? "" : "off");
     }
 
     GexfJS.setParams = function setParams(paramlist) {
@@ -1292,8 +1374,8 @@
         });
         $("#infoButton").click(function() {
             GexfJS.params.showInfo = !GexfJS.params.showInfo;
-            if (GexfJS.params.showList) GexfJS.params.showList = false;
-            updateButtonStates();
+            //if (GexfJS.params.showList) GexfJS.params.showList = false;
+            //updateButtonStates();
             updateInfoPanel();
             return false;
         });
@@ -1310,8 +1392,17 @@
             return false;
         });
         $("#july").click(function () {
-            GexfJS.params.showEdges = !GexfJS.params.showEdges;
-            updateButtonStates();
+            location.href = "#twitch-graph_17-31_july.gexf"
+            return false;
+        });
+        
+        $("#august").click(function () {
+            location.href = "#"
+            return false;
+        });
+
+        $("#strong_comm").click(function () {
+            location.href = "#twitch-graph_17_july_15_august_strong.gexf"
             return false;
         });
         
@@ -1322,9 +1413,9 @@
                     "left": "0px"
                 }, function () {
                     $("#aUnfold").attr("class", "leftarrow");
-                    $("#zonecentre").css({
+                    /*$("#zonecentre").css({
                         left: _cG.width() + "px"
-                    });
+                    });*/
                 });
             } else {
                 _cG.animate({

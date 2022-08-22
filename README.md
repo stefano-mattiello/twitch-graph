@@ -14,7 +14,7 @@ The data_collection folder has a script called main that can be ran to collect (
 
 The graph is made using Gephi and the website using [gexf-js](https://github.com/raphv/gexf-js).
 
-The nodes of the graph are streamers and their size is the amount of unique viewers that visited that channel. The edges represent the shared viewers of two channels. To make the graph I considered only the users that watched a channel  for at least 2 hours during these 2 weeks or watched the channel more than the 70% of its total broadcast time. I removed the users detected for more than 350 hours, since they are probably bots (however they were only the 0.6% of the total).
+The nodes of the graph are streamers and their size is the amount of unique viewers that visited that channel. The edges represent the shared viewers of two channels. To make the graph I considered only the users that watched a channel  for at least 2 hours. I removed the users detected for more than 350 hours, since they are probably bots (however they were only the 0.6% of the total).
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

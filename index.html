@@ -47,33 +47,30 @@
             </div>
             <div id="leftcontent"></div>
         </div>
-        <div id="titlebar">
             <div id="maintitle">
-                <h1><a href="http://gephi.org/" target="_blank" title="Made with Gephi">Gephi: JavaScript GEXF Viewer</a></h1>
+                <a href="http://gephi.org/" target="_blank" ><img id="gephi" src="img/Gephi-logo.png"></a>
             </div>
+        <div id="search">
             <form id="recherche">
                 <input id="searchinput" class="grey" autocomplete="off" />
-                <input id="searchsubmit" type="submit" />
             </form>
         </div>
         <ul id="autocomplete">
         </ul>
          <div id="infoContainer">
-        <a href="#" id="infoButton"  title="Info"></a>
+        <a href="#" id="infoButton" title="Info"></a>
     </div>
     <div id="infoPanel" class="off">
         <h1>Info:</h1>
+        <h4 id="period">Data collected from 17/07 to 15/08 2022</h4>
         <h4>The graph take into account only viewers that spent at least two hours in a channel's chat.</h4>
-        <h4>Nodes are connected if they share more than 40 viewers and the shared viewers are (at least) the 10% of the total viewers of one of the two nodes.</h4>
+        <h4 id="description">Nodes are connected if they share more than 40 viewers and the shared viewers are (at least) the 10% of the total viewers of one of the two nodes.</h4>
         <div id="comm" class="info">
             <h2>Others graphs:</h2>
         <ul>
-        <li><a href="#">Main graph</a>
-        <p style="padding: 0px; margin: 0px">data collected from 17/07 to 15/08 2022</p></li>
-        <li><a href="#twitch-graph_17-31_july.gexf">July graph</a></li>
-        <p style="padding: 0px; margin: 0px">data collected from 17/07 to 1/08 2022</p></li>
-        <li><a href="strong_community/#">Strong community graph</a></li>
-        <p style="padding: 0px; margin: 0px">visualize only strongest links</p></li>
+        <li><a id="august">Main graph</a></li>
+        <li><a id="july">July graph</a></li>
+        <li><a id="strong_comm">Strong community graph</a></li>
         </ul>
         </div>
     </div>
